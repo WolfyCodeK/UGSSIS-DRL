@@ -1,0 +1,17 @@
+# Base dependencies
+numpy
+tqdm
+rasterio
+opencv-python
+
+# PyTorch
+torch
+torchvision
+tensorboard
+
+Pillow>=8.1.0
+
+segmentation-models-pytorch>=0.3.0
+
+pandas 
+matplotlib
