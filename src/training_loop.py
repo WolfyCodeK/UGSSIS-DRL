@@ -36,7 +36,7 @@ class NormaliseSampleDict:
         mean = self.mean_tensor.to(image.dtype).view(-1, 1, 1)
         std = self.std_tensor.to(image.dtype).view(-1, 1, 1)
         
-        sample['image'] = transforms.functional.normalize(image, mean=mean, std=std)
+        sample['image'] = transforms.Normalize(mean=mean, std=std)(image)
         
         return sample
 

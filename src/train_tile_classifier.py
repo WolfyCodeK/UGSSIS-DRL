@@ -89,7 +89,7 @@ def validate_tile_classifier_model(model, dataloader, criterion, device):
     
     if num_samples > 0:
         accuracy = accuracy_score(all_labels, all_preds)
-        f1 = f1_score(all_labels, all_preds, zero_division=0)
+        f1 = f1_score(all_labels, all_preds, zero_division="warn")
     else:
         accuracy = 0.0
         f1 = 0.0
@@ -122,7 +122,7 @@ def train_tile_classifier_model():
         )
         
     except Exception as e:
-        print(f"Failed to load dataset for tile classifier training: {e}", exc_info=True)
+        print(f"Failed to load dataset for tile classifier training: {e}")
         writer.close()
         return None
         
@@ -151,7 +151,15 @@ def train_tile_classifier_model():
     print("Calculating target label distribution...")
 
     try:
-        all_labels = [full_dataset[i]['label'].item() for i in range(len(full_dataset))] 
+        all_labels = []
+        
+        for i in range(len(full_dataset)):
+            sample = full_dataset[i]
+
+            if sample is None:
+                continue
+            
+            all_labels.append(sample['label'].item()) 
         
         label_counts = np.bincount(np.array(all_labels).astype(int))
         

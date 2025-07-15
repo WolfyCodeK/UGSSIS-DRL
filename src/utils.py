@@ -7,6 +7,17 @@ import torch
 import os
 import re
 import src.config as config
+import logging
+
+def setup_logger():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    
+    return logger, handler
 
 def ensure_dir(directory):
     path = Path(directory)

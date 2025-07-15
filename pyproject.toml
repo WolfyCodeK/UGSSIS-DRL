@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ugs"
+version = "0.1.0"
+authors = [
+  { name="Isaac Wolf", email="isaack2wolf@gmail.com" },
+]
+description = "Tool for Segmenting Urban Green Spaces in Satellite Images using Deep Reinforcement Learning"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.scripts]
+ugs = "src.main:main"
+
+[tool.setuptools]
+packages = ["src"]

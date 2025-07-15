@@ -11,8 +11,7 @@ GAMMA_CORRECTION = 1.2
 
 # Directory paths
 DATA_DIR = 'data'
-OUTPUT_DIR = 'preprocessed_data'
-TEST_OUTPUT_DIR = 'test_preprocessed_data'
+PREPROCESSED_DATA_OUTPUT_DIR = 'preprocessed_data'
 
 TILE_SIZE = 512
 

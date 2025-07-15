@@ -216,7 +216,7 @@ class DataPreprocessor:
             
             img_with_evi = np.zeros((5, img.shape[1], img.shape[2]), dtype=np.float32)
             img_with_evi[:4] = img.astype(np.float32)
-            img_with_evi[4] = evi.astype(np.float32)
+            img_with_evi[4] = evi.numpy().astype(np.float32)
                 
             tile_ids = self.create_tiles(img_with_evi, multi_class_mask, img_file.name)
             
@@ -379,6 +379,6 @@ class DataPreprocessor:
         split_deficit = {split: target_ratios[split] - current_ratios[split] 
                         for split in config.SPLITS}
         
-        assigned_split = max(split_deficit, key=split_deficit.get)
+        assigned_split = max(split_deficit.keys(), key=lambda x: split_deficit[x])
         
         return assigned_split

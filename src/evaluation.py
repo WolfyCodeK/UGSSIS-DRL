@@ -57,11 +57,7 @@ def load_model(checkpoint_data, device, model_type):
 def predict_binary(model, dataloader, device, model_type, return_images=True):
     model.eval()
     all_preds_binary = []
-    
-    if return_images:
-        all_images_norm = []
-    else:
-        all_images_norm = None
+    all_images_norm = []
         
     all_ids = []
 
@@ -90,7 +86,7 @@ def predict_binary(model, dataloader, device, model_type, return_images=True):
     print(f"{model_type.capitalize()} inference complete.")
     all_preds_binary_np = np.concatenate(all_preds_binary, axis=0)
     
-    if return_images:
+    if return_images and all_images_norm:
         all_images_norm_np = np.concatenate(all_images_norm, axis=0)
     else:
         all_images_norm_np = None
@@ -225,7 +221,7 @@ def evaluate_model(model_checkpoint, eval_output_dir_name="evaluation_results"):
         return
     
     except Exception as e:
-        print(f"An unexpected error occurred loading checkpoint {model_checkpoint}: {e}", exc_info=True)
+        print(f"An unexpected error occurred loading checkpoint {model_checkpoint}: {e}")
         return
 
     tile_classifier_model_path = Path(config.TC_CHECKPOINT_DIR) / config.TC_SAVE_NAME 
@@ -240,7 +236,7 @@ def evaluate_model(model_checkpoint, eval_output_dir_name="evaluation_results"):
             print("Existing Tile Classifier model loaded successfully. Skipping input generation and training.")
             
         except Exception as e:
-            print(f"Failed to load existing tile classifier model state dict from {tile_classifier_model_path}: {e}", exc_info=True)
+            print(f"Failed to load existing tile classifier model state dict from {tile_classifier_model_path}: {e}")
             print("Cannot proceed with evaluation using the faulty classifier checkpoint.")
             return
     else:
@@ -278,7 +274,7 @@ def evaluate_model(model_checkpoint, eval_output_dir_name="evaluation_results"):
                 return 
             
         except Exception as e:
-            print(f"An unexpected error occurred during tile classifier training: {e}", exc_info=True)
+            print(f"An unexpected error occurred during tile classifier training: {e}")  
             return 
 
     if tile_classifier_model is None:
@@ -569,6 +565,6 @@ def generate_tile_classifier_inputs(model_green, model_urban, device, norm_stats
         return True
 
     except Exception as e:
-        print(f"An unexpected error occurred during tile classifier input generation: {e}", exc_info=True)
+        print(f"An unexpected error occurred during tile classifier input generation: {e}")
         
         return False

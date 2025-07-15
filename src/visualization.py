@@ -164,6 +164,8 @@ def render_channel_panels(img, multi_class_mask, augmented_img=None, augmented_m
     axs[4].axis('off')
     
     # Create the class distribution visualisation panel
+    if display_mask is None:
+        return fig, axs
     height, width = display_mask.shape
     mask_img = np.zeros((height, width, 3), dtype=np.uint8)
     
@@ -186,7 +188,7 @@ def render_channel_panels(img, multi_class_mask, augmented_img=None, augmented_m
     
     for class_id in sorted(counter.keys()):
         if class_id in class_names:
-            color = [c/config.UINT8_MAX for c in class_colors[class_id]]
+            color = tuple(c/config.UINT8_MAX for c in class_colors[class_id])
             legend_elements.append(
                 mpatches.Patch(
                     color=color,
@@ -223,7 +225,7 @@ def create_class_distribution_legend(counter, class_colors, class_names):
             
             # Normalise to 0-1 range
             if isinstance(color[0], int):
-                color = [c/config.UINT8_MAX for c in color]
+                color = tuple(c/config.UINT8_MAX for c in color)
                 
             percentage = (counter[class_id] / total_pixels) * 100 if total_pixels > 0 else 0
             
@@ -278,7 +280,7 @@ def render_tile_with_original_mask(img, multi_class_mask, original_mask_file, ti
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=config.VIS_DPI, bbox_inches='tight')
+        plt.savefig(save_path, bbox_inches='tight')
     
     plt.close(fig)
 
@@ -294,12 +296,18 @@ def render_full_image_with_classes(img, mask_file, save_path=None):
     if mask_file.suffix.lower() in ['.tif', '.tiff']:
         # Read directly with cv2
         mask = cv2.imread(str(mask_file), cv2.IMREAD_COLOR)
+        if mask is None:
+            logger.error(f"Failed to read mask file: {mask_file}")
+            return
         # Convert to RGB color space for matplotlib
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
         
     else:
         # Read and convert to colormap
         mask_index = cv2.imread(str(mask_file), cv2.IMREAD_UNCHANGED)
+        if mask_index is None:
+            logger.error(f"Failed to read mask file: {mask_file}")
+            return
         
         mask_height, mask_width = mask_index.shape
         mask = np.zeros((mask_height, mask_width, 3), dtype=np.uint8)
@@ -324,7 +332,7 @@ def render_full_image_with_classes(img, mask_file, save_path=None):
     legend_elements = []
     for class_id, count in top_classes:
         # Scale to 0-1 for matplotlib
-        color = [c/config.UINT8_MAX for c in class_colors[class_id]]  
+        color = tuple(c/config.UINT8_MAX for c in class_colors[class_id])  
         name = class_names[class_id]
         
         percentage = (count / total_pixels) * 100
@@ -349,7 +357,7 @@ def render_full_image_with_classes(img, mask_file, save_path=None):
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=config.VIS_DPI, bbox_inches='tight')
+        plt.savefig(save_path, bbox_inches='tight')
     
     plt.close(fig)
 
@@ -359,11 +367,16 @@ def get_mask_class_counter(mask_file, mask_img=None):
         if mask_file.suffix.lower() in ['.tif', '.tiff']:
             # Color mask - use cv2 to read
             mask_img = cv2.imread(str(mask_file), cv2.IMREAD_COLOR)
+            if mask_img is None:
+                return Counter()
             # Convert to RGB color space for matplotlib
             mask_img = cv2.cvtColor(mask_img, cv2.COLOR_BGR2RGB)
         else:
             # Read index mask
-            return Counter(cv2.imread(str(mask_file), cv2.IMREAD_UNCHANGED).flatten())
+            mask_data = cv2.imread(str(mask_file), cv2.IMREAD_UNCHANGED)
+            if mask_data is None:
+                return Counter()
+            return Counter(mask_data.flatten())
 
     flat_mask = mask_img.reshape(-1, 3)
     
@@ -392,6 +405,8 @@ def extract_tile_from_mask(original_mask_file, tile_coords):
     if original_mask_file.suffix.lower() in ['.tif', '.tiff']:
         # Color mask - use cv2 to read
         full_mask_img = cv2.imread(str(original_mask_file), cv2.IMREAD_COLOR)
+        if full_mask_img is None:
+            return np.zeros((tile_size, tile_size, 3), dtype=np.uint8), Counter()
         # Convert to RGB color space for matplotlib
         full_mask_img = cv2.cvtColor(full_mask_img, cv2.COLOR_BGR2RGB)
         
@@ -410,6 +425,8 @@ def extract_tile_from_mask(original_mask_file, tile_coords):
     else:
         # Read index mask
         full_mask = cv2.imread(str(original_mask_file), cv2.IMREAD_UNCHANGED)
+        if full_mask is None:
+            return np.zeros((tile_size, tile_size, 3), dtype=np.uint8), Counter()
         full_mask_img = np.zeros((full_mask.shape[0], full_mask.shape[1], 3), dtype=np.uint8)
         
         # Create color visualization from index mask
@@ -511,9 +528,9 @@ def generate_tile_visualization_from_arrays(tile_data, mask_data, tile_id, outpu
     
     fig.suptitle(f"Tile: {tile_id}{suffix}", fontsize=14)
     
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.tight_layout(rect=(0, 0, 1, 0.95))
     
-    plt.savefig(output_file, dpi=config.VIS_DPI)
+    plt.savefig(output_file)
     plt.close(fig)
     
     print(f"Created visualization: {output_file}")
@@ -569,10 +586,8 @@ def display_dataset_preview(dataset, dataset_name, num_samples):
     except Exception as e:
         logger.warning(f"Could not switch matplotlib backend: {e}. Interactive preview might not work.")
 
-    fig, axes = plt.subplots(1, num_samples, figsize=(num_samples * 4, 4.5))
-    
-    if num_samples == 1:
-        axes = [axes]
+    fig, axes = plt.subplots(1, num_samples, figsize=(num_samples * 4, 4.5), squeeze=False)
+    axes = axes.flatten()
 
     # Visual preview loop
     for i, index in enumerate(sample_indices_to_display):
@@ -622,7 +637,7 @@ def display_dataset_preview(dataset, dataset_name, num_samples):
             axes[i].axis('off')
 
     fig.suptitle(f"Visual Preview: {dataset_name} ({num_samples} random samples)")
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.tight_layout(rect=(0, 0, 1, 0.95))
     plt.show()
 
     logger.info(f"Calculating overall class distribution for {dataset_name} ({len(dataset)} tiles)...")
@@ -736,8 +751,8 @@ def save_validation_prediction_binary(model, device, sample, epoch_or_cycle, out
     axs[1].axis('off')
     
     gt_patches = [
-        mpatches.Patch(color=background_color, label='Background/Other'),
-        mpatches.Patch(color=target_color, label=target_class_name)
+        mpatches.Patch(color=tuple(background_color), label='Background/Other'),
+        mpatches.Patch(color=tuple(target_color), label=target_class_name)
     ]
     axs[1].legend(handles=gt_patches, loc='lower right', fontsize=9)
 
@@ -748,8 +763,8 @@ def save_validation_prediction_binary(model, device, sample, epoch_or_cycle, out
     axs[2].axis('off')
     
     pred_patches = [
-        mpatches.Patch(color=background_color, label='Background/Other'),
-        mpatches.Patch(color=target_color, label=target_class_name)
+        mpatches.Patch(color=tuple(background_color), label='Background/Other'),
+        mpatches.Patch(color=tuple(target_color), label=target_class_name)
     ]
     axs[2].legend(handles=pred_patches, loc='lower right', fontsize=9)
 
@@ -757,7 +772,7 @@ def save_validation_prediction_binary(model, device, sample, epoch_or_cycle, out
     save_path = Path(output_dir) / f"val_pred_{model_type}_cycle_{epoch_or_cycle}_{tile_id}.png"
     
     plt.suptitle(f"Validation Prediction ({model_type.capitalize()}) - Cycle/Epoch {epoch_or_cycle}")
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=(0, 0.03, 1, 0.95))
     
     try:
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
@@ -850,7 +865,7 @@ def save_selected_tile_collage(full_dataset_untransformed, selected_indices, gre
         axes[j].axis('off')
 
     fig.suptitle(f"Selected Tiles - Cycle {cycle}", fontsize=16)
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=(0.0, 0.03, 1.0, 0.95))
 
     try:
         plt.savefig(save_path, dpi=120, bbox_inches='tight')

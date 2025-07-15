@@ -260,6 +260,10 @@ def display_tile():
     tile_id = all_tile_ids_map.get(current_dataset_index, "UNKNOWN_ID")
     logger.debug(f"Displaying labelable list position {current_labelable_list_pos}, dataset index {current_dataset_index}, tile: {tile_id}")
 
+    if dataset is None:
+        logger.error("Dataset is not loaded. Cannot display tile.")
+        return
+        
     try:
         sample = dataset[current_dataset_index]
         if sample is None:

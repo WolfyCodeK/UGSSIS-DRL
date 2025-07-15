@@ -8,7 +8,7 @@ import pandas as pd
 
 class UGSDataset(Dataset):
     def __init__(self, split='train', transform=None, target_class_index=None):
-        self.output_dir = Path(config.OUTPUT_DIR)
+        self.output_dir = Path(config.PREPROCESSED_DATA_OUTPUT_DIR)
         self.split = split
         self.target_class_index = target_class_index
         self.transform = transform
@@ -31,7 +31,7 @@ class UGSDataset(Dataset):
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
-            idx = idx.tolist()
+            idx = int(idx.item())
 
         tile_path = Path(self.tile_files[idx])
         tile_id = tile_path.stem
@@ -49,7 +49,7 @@ class UGSDataset(Dataset):
                 mask = mask_three_class.astype(np.uint8)
 
         except Exception as e:
-            print(f"Error loading data for tile_id {tile_id} (idx {idx}): {e}", exc_info=True)
+            print(f"Error loading data for tile_id {tile_id} (idx {idx}): {e}")
             return None
         
         tile_tensor = torch.from_numpy(tile).float()
@@ -159,7 +159,7 @@ class TileClassifierDataset(Dataset):
             target_label = float(expert_label)
 
         except Exception as e:
-            print(f"Error loading or processing data for tile_id {tile_id} (idx {idx}): {e}", exc_info=True)
+            print(f"Error loading or processing data for tile_id {tile_id} (idx {idx}): {e}")
             return None
 
         input_tensor = torch.from_numpy(input_stack)
