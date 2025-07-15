@@ -9,7 +9,6 @@ from pathlib import Path
 from tqdm import tqdm
 import time
 import datetime
-import logging
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 

@@ -12,16 +12,13 @@ Labels the 'train' split and saves to 'expert_tile_labels.csv'.
 import matplotlib
 matplotlib.use('TkAgg') # Use a backend that supports interactive events
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import numpy as np
 from pathlib import Path
-import argparse
 import pandas as pd
 import logging
 import sys
 import torch
 from tqdm import tqdm
-import json
 from src.utils import convert_windows_path_to_wsl
 
 # Ensure src is in path for imports if running script directly

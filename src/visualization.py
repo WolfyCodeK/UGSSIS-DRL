@@ -7,7 +7,6 @@ import matplotlib.patches as mpatches
 import cv2
 from collections import Counter
 from src.utils import ensure_dir, get_mask_path, setup_logger
-import logging
 import random
 from src.dataset import UGSDataset
 from tqdm import tqdm
