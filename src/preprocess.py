@@ -5,6 +5,7 @@ from pathlib import Path
 import rasterio
 import warnings
 from rasterio.errors import NotGeoreferencedWarning
+import torch
 import src.utils as utils
 import src.config as config
 
@@ -216,7 +217,12 @@ class DataPreprocessor:
             
             img_with_evi = np.zeros((5, img.shape[1], img.shape[2]), dtype=np.float32)
             img_with_evi[:4] = img.astype(np.float32)
-            img_with_evi[4] = evi.numpy().astype(np.float32)
+            
+            # Handle both tensor and numpy array cases from get_evi
+            if torch.is_tensor(evi):  # PyTorch tensor
+                img_with_evi[4] = evi.numpy().astype(np.float32)
+            else:  # NumPy array
+                img_with_evi[4] = evi.astype(np.float32)
                 
             tile_ids = self.create_tiles(img_with_evi, multi_class_mask, img_file.name)
             

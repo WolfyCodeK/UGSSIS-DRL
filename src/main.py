@@ -1,4 +1,5 @@
 import argparse
+import sys
 from pathlib import Path
 import src.config as config
 
@@ -19,14 +20,10 @@ def main():
     
     parser.add_argument(
         '--evaluate', 
-        action='store_true',
+        type=str,
+        default=None,
+        metavar='path\\to\\model',
         help='Evaluate a trained model checkpoint'
-    )
-    
-    parser.add_argument(
-        '--checkpoint', 
-        type=str, 
-        help='Path to model checkpoint for evaluation'
     )
 
     parser.add_argument(
@@ -35,6 +32,14 @@ def main():
         help="Run the test loop"
     )
 
+    # Check for --evaluate without argument before argparse processes it
+    if '--evaluate' in sys.argv and len(sys.argv) > 1:
+        eval_index = sys.argv.index('--evaluate')
+        if eval_index == len(sys.argv) - 1 or (eval_index + 1 < len(sys.argv) and sys.argv[eval_index + 1].startswith('-')):
+            parser.print_usage()
+            print(f"{parser.prog}: error: argument --evaluate: no valid path was provided")
+            sys.exit(2)
+    
     args = parser.parse_args()
 
     data_dir = Path(config.DATA_DIR)
@@ -61,17 +66,13 @@ def main():
         print("Training finished.")
 
     if args.evaluate:
-        if not args.checkpoint:
-            print("Checkpoint path must be provided for evaluation using --checkpoint")
-            
-        else:
-            print(f"Starting evaluation for checkpoint: {args.checkpoint}")
-            
-            from src.evaluation import evaluate_model
-            
-            evaluate_model(model_checkpoint=args.checkpoint)
-            
-            print("Evaluation finished.")
+        print(f"Starting evaluation for checkpoint: {args.evaluate}")
+        
+        from src.evaluation import evaluate_model
+        
+        evaluate_model(model_checkpoint=args.evaluate)
+        
+        print("Evaluation finished.")
 
     if args.test:
         print("Testing...")
