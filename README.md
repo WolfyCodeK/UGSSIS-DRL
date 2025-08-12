@@ -1,3 +1,5 @@
+## Urban Green Space Sattellite Image Segmentation using Deep Reinforcement Learning
+
 # Setup & Usage
 
 1.  **Create and activate a virtual environment.**
@@ -11,7 +13,7 @@
  - Place required subdirectories into `data/`
  - data should be directory format:
 
-    +data
+       +data
         +Annotation__color
             -GF2_PMS1__L1A0000564539-MSS1_24label.tif
             -GF2_PMS1__L1A0000575925-MSS1_24label.tif
