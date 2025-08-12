@@ -27,3 +27,5 @@ preprocessed_data/
 .DS_Store
 Thumbs.db 
 .VSCodeCounter/
+checkpoints/
+logs/
